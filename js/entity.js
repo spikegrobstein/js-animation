@@ -6,8 +6,11 @@
     this.properties = Default.value( options.properties, {} );
 
     this.bus = Default.must( options.bus, "Must define a 'bus' option (MessageBus)")
+
     this.x = Default.must( options.x );
     this.y = Default.must( options.y );
+    this.angleRadians = 0;
+
     this.frameHandler = options.frameHandler;
 
     this.bus.listen( 'env.step', function( _name, payload ) {
@@ -35,14 +38,19 @@
     this.bus.push( 'entity.element.add', this.element );
   }
 
-  Entity.prototype.moveTo = function( x, y ) {
+  Entity.prototype.moveTo = function( x, y, doRotation ) {
+    if ( doRotation ) {
+      // set the angle to point this in the right direction
+      this.angleRadians = Math.atan2((this.y - y), (this.x - x)) + Math.PI;
+    }
+
     this.x = x;
     this.y = y;
     this.bus.push( 'entity.move', this );
   };
 
-  Entity.prototype.moveDelta = function( x, y ) {
-    this.moveTo( this.x + x, this.y + y );
+  Entity.prototype.moveDelta = function( x, y, doRotation ) {
+    this.moveTo( this.x + x, this.y + y, doRotation );
   };
 
   globals.Entity = Entity;
