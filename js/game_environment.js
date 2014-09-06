@@ -72,14 +72,10 @@ window.requestAnimFrame = function(){
   };
 
   GameEnvironment.prototype.moveEntity = function( entity ) {
-    entity.element.style['transform'] = entity.element.style['-ms-transform'] = entity.element.style['-webkit-transform'] = 'translate3d(' + entity.x + 'px,' + entity.y + 'px,0) rotate(' + GameEnvironment.rad2deg(entity.angleRadians) + 'deg)';
+    entity.element.style['transform'] = entity.element.style['-ms-transform'] = entity.element.style['-webkit-transform'] = 'translate3d(' + entity.x + 'px,' + entity.y + 'px,0) rotate(' + entity.angleRadians + 'rad)';
 
     entity.element.hidden = ! entity.display;
   };
-
-  GameEnvironment.rad2deg = function(rad) {
-    return rad * ( 180 / Math.PI );
-  }
 
   globals.GameEnvironment = GameEnvironment;
 
