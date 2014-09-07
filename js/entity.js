@@ -20,6 +20,7 @@
     }.bind(this));
 
     this.display = true;
+    this._deleted = false;
 
     this._buildElement( options.class );
 
@@ -36,7 +37,16 @@
     this.height = this.element.offsetHeight;
 
     this.bus.push( 'entity.element.add', this.element );
-  }
+  };
+
+  Entity.prototype.destroy = function() {
+    //if ( this._deleted ) { return; }
+
+    // destroy the element
+    this._deleted = true;
+    // remove from environment
+    this.bus.push( 'entity.destroy', this );
+  };
 
   Entity.prototype.moveTo = function( x, y, doRotation ) {
     if ( doRotation ) {

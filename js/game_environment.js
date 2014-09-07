@@ -25,6 +25,13 @@ window.requestAnimFrame = function(){
     this.lastTickAt = new Date().getTime();
     this.status = 'halted';
 
+    // create Trash element
+    this.trashElement = document.createElement('div');
+    this.trashElement.style.display = 'none';
+    this.fieldElement.appendChild( this.trashElement );
+
+    this.trashCount = 0;
+
     this.bus.listen( 'entity.move', function( _name, entity ) {
       if ( entity.element && entity.display ) {
         this.movedEntityQueue.push( entity );
@@ -36,10 +43,26 @@ window.requestAnimFrame = function(){
       this.bus.push( 'entity.move', entity );
     }.bind(this));
 
+    this.bus.listen( 'entity.destroy', function( _name, entity ) {
+      this.moveToTrash( entity.element );
+      this.entities.splice( this.entities.indexOf(entity) );
+      delete entity;
+    }.bind(this));
+
     this.bus.listen( 'entity.element.add', function( _name, element ) {
       this.fieldElement.appendChild( element );
     }.bind(this));
   };
+
+  GameEnvironment.prototype.moveToTrash = function( element ) {
+    this.trashElement.appendChild( element );
+    this.trashCount += 1;
+  }
+
+  GameEnvironment.prototype.emptyTrash = function() {
+    this.trashElement.innerHTML = '';
+    this.trashCount = 0;
+  }
 
   GameEnvironment.prototype.run = function() {
     this.status = 'running';
