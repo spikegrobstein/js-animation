@@ -97,41 +97,6 @@
           this.properties.rotateDirection = 0;
         }
       }.bind(this));
-
-      // this.bus
-        // .listen( 'player.turn.left.start', function( _name, payload ) {
-          // // payload should contain state information
-          // this.properties.rotateDirection = -1;
-          // this.bus.push( 'entity.move', this );
-        // }.bind(this))
-        // .listen( 'player.turn.left.end', function( _name, payload ) {
-          // // payload should contain state information
-          // this.properties.rotateDirection = 0;
-          // this.bus.push( 'entity.move', this );
-        // }.bind(this))
-        // .listen( 'player.turn.right.start', function( _name, payload ) {
-          // // payload should contain state information
-          // this.properties.rotateDirection = 1;
-          // this.bus.push( 'entity.move', this );
-        // }.bind(this))
-        // .listen( 'player.turn.right.end', function( _name, payload ){
-          // this.properties.rotateDirection = 0;
-          // this.bus.push( 'entity.move', this );
-        // }.bind(this));
-
-      // // left
-      // gameEnvironment.keyboard.handle( 37, function( _key, state ) {
-        // this.bus.push( 'player.turn.left.start' );
-      // }.bind(this), function( _key, state ) {
-        // this.bus.push( 'player.turn.left.end' );
-      // }.bind(this));
-
-      // // right
-      // gameEnvironment.keyboard.handle( 39, function( _key, state ) {
-        // this.bus.push( 'player.turn.right.start' );
-      // }.bind(this), function( _key, state ) {
-        // this.bus.push( 'player.turn.right.end' );
-      // }.bind(this));
     },
     frameHandler: function( tick, timeDelta, now ) {
       this.properties.rotateRate += this.properties.rotateDirection * 0.01;

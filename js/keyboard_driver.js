@@ -95,21 +95,6 @@
       }
     }.bind(this));
 
-    // if ( typeof downCallback === 'function' ) {
-      // this.bus.listen( 'keyboard.down', function( _name, payload ) {
-        // if ( payload.key == key ) {
-          // downCallback( payload.key, payload.state )
-        // }
-      // });
-    // }
-
-    // if ( typeof upCallback === 'function' ) {
-      // this.bus.listen( 'keyboard.up', function( _name, payload ) {
-        // if ( payload.key == key ) {
-          // upCallback( payload.key, payload.state )
-        // }
-      // });
-    // }
   };
 
   globals.KeyboardDriver = KeyboardDriver;
