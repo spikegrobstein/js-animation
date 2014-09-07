@@ -67,8 +67,6 @@
 
         this.actionState[action].unshift(mode);
 
-        console.table(this.actionState);
-
         this.bus.push( down, {
           key: key,
           keyboardState: this.keyboardState,
@@ -84,8 +82,6 @@
         }
 
         this.actionState[action].splice( this.actionState[action].indexOf(mode), 1 );
-
-        console.table(this.actionState);
 
         this.bus.push( up, {
           key: key,
