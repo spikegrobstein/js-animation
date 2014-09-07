@@ -24,6 +24,10 @@
 
     this._buildElement( options.class );
 
+    if ( typeof options.onInit === 'function' ) {
+      options.onInit.call( this );
+    }
+
     this.bus.push( 'entity.add', this );
   };
 
