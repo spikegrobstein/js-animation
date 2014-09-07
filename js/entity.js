@@ -9,7 +9,7 @@
 
     this.x = Default.must( options.x );
     this.y = Default.must( options.y );
-    this.angleRadians = 0;
+    this.angleRadians = Default.value( options.angleRadians, 0 );
 
     this.frameHandler = options.frameHandler;
 
