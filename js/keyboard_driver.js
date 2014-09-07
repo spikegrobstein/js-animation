@@ -1,56 +1,115 @@
 (function( globals, document ) {
   var KeyboardDriver = function( messageBus ) {
-    this.state = {};
+    this.keyboardState = {};
     this.bus = messageBus;
+
+    this.actionState = {};
+    this.keyMappings = {
+      left: 37,
+      right: 39
+    };
 
     document.addEventListener( 'keydown', function(event) {
       var key = event.which,
-          was_held = this.state[key];
+          was_held = this.keyboardState[key];
 
-      this.state[key] = true;
+      // this.state[key] = true;
 
       // if it wasn't already held, then push a message that it was pressed.
       if ( ! was_held ) {
-        this.bus.push( 'keyboard.down', { key: key, state: this.state } );
+        this.keyboardState[key] = new Date().getTime();
+        this.bus.push( 'keyboard.down', { key: key, state: this.keyboardState } );
       }
     }.bind(this));
 
     document.addEventListener( 'keyup', function(event) {
       var key = event.which;
 
-      this.state[key] = false;
-      this.bus.push( 'keyboard.up', { key: key, state: this.state } );
+      this.keyboardState[key] = false;
+      this.bus.push( 'keyboard.up', { key: key, state: this.keyboardState } );
     }.bind(this));
   };
 
-  // handle a key
-  // key can be a string representation of the key (eg: 'A')
-  // if you use the string representation, for letters, use capital
-  // or the integer ascii code for the key as used by the normal key events
-  // fires down_callback on down and up_callback on up
-  // it's up to the user to bind the callbacks as needed
-  // TODO: maybe put callbacks into an object and add additional options like an object to bind to?
-  KeyboardDriver.prototype.handle = function( key, downCallback, upCallback ) {
+  // action states
+  // for tracking competing inputs
+  // eg: left/right
+  // name the action (eg: turn)
+  // on keydown, .shift() the type into that action and broadcast new state
+  // on keyup, remove that type from the action
+  // when checking state, return the first element
+  // I want to be notified of state changes... I don't really care what they are. I'll act upon state during each update.
+  // keyboard.handle(':left', { action: 'turn', mode: 'left', down: 'player.turn.left', up: 'player.turn.left.stop' })
+
+  KeyboardDriver.prototype.getMapping = function( key ) {
+    return this.keyMappings[key.match(/^:(.+)$/)[1]];
+  }
+
+  KeyboardDriver.prototype.handle = function( key, options ) {
     if ( typeof key === 'string' ) {
-      // do any necessary key translation from string to int
-      key = key.charCodeAt(0);
+      if ( key.length > 1 && key[0] == ':' ) {
+        key = this.getMapping(key);
+      } else {
+        // do any necessary key translation from string to int
+        key = key.charCodeAt(0);
+      }
     }
 
-    if ( typeof downCallback === 'function' ) {
-      this.bus.listen( 'keyboard.down', function( _name, payload ) {
-        if ( payload.key == key ) {
-          downCallback( payload.key, payload.state )
-        }
-      });
-    }
+    var action = options.action,
+        mode   = options.mode,
+        up     = Default.value(options.up, 'keyboard.state.change'),
+        down   = Default.value(options.down, 'keyboard.state.change')
 
-    if ( typeof upCallback === 'function' ) {
-      this.bus.listen( 'keyboard.up', function( _name, payload ) {
-        if ( payload.key == key ) {
-          downCallback( payload.key, payload.state )
+    this.bus.listen( 'keyboard.down', function( _name, payload ) {
+      if (payload.key == key) {
+        if ( typeof this.actionState[action] === 'undefined' ) {
+          this.actionState[action] = [];
         }
-      });
-    }
+
+        this.actionState[action].unshift(mode);
+
+        console.table(this.actionState);
+
+        this.bus.push( down, {
+          key: key,
+          keyboardState: this.keyboardState,
+          actionState: this.actionState,
+        } );
+      }
+    }.bind(this));
+
+    this.bus.listen( 'keyboard.up', function( _name, payload ) {
+      if (payload.key == key) {
+        if ( typeof this.actionState[action] === 'undefined' ) {
+          this.actionState[action] = [];
+        }
+
+        this.actionState[action].splice( this.actionState[action].indexOf(mode), 1 );
+
+        console.table(this.actionState);
+
+        this.bus.push( up, {
+          key: key,
+          keyboardState: this.keyboardState,
+          actionState: this.actionState,
+        } );
+      }
+    }.bind(this));
+
+    // if ( typeof downCallback === 'function' ) {
+      // this.bus.listen( 'keyboard.down', function( _name, payload ) {
+        // if ( payload.key == key ) {
+          // downCallback( payload.key, payload.state )
+        // }
+      // });
+    // }
+
+    // if ( typeof upCallback === 'function' ) {
+      // this.bus.listen( 'keyboard.up', function( _name, payload ) {
+        // if ( payload.key == key ) {
+          // upCallback( payload.key, payload.state )
+        // }
+      // });
+    // }
   };
 
   globals.KeyboardDriver = KeyboardDriver;
