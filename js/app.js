@@ -47,6 +47,10 @@
       if ( this.y > 460 ) {
         this.properties.yv = -this.properties.yv * .9;
         this.properties.bounces += 1;
+
+        if ( this.properties.bounces > 5 ) {
+          this.destroy();
+        }
       }
 
       if ( this.x > 500 || this.x < 0 ) {
@@ -59,7 +63,92 @@
         true
       )
     }
-  })
+  });
+
+  new Entity({
+    x: 152,
+    y: 152,
+    bus: gameEnvironment.bus,
+    class: 'gun',
+    angleRadians: - Math.PI/2,
+    properties: {
+      rotateRate: 0, // not rotating
+      rotateDirection: 0,
+      maxRotateRate: 0.1
+    },
+    onInit: function( ) {
+
+      gameEnvironment.keyboard.handle(':left', {
+        action: 'turn',
+        mode: 'left'
+      });
+
+      gameEnvironment.keyboard.handle(':right', {
+        action: 'turn',
+        mode: 'right'
+      })
+
+      this.bus.listen( 'keyboard.state.change', function( _name, payload ) {
+        if ( payload.actionState.turn[0] == 'left' ) {
+          this.properties.rotateDirection = -1;
+        } else if ( payload.actionState.turn[0] == 'right' ) {
+          this.properties.rotateDirection = 1;
+        } else {
+          this.properties.rotateDirection = 0;
+        }
+      }.bind(this));
+
+      // this.bus
+        // .listen( 'player.turn.left.start', function( _name, payload ) {
+          // // payload should contain state information
+          // this.properties.rotateDirection = -1;
+          // this.bus.push( 'entity.move', this );
+        // }.bind(this))
+        // .listen( 'player.turn.left.end', function( _name, payload ) {
+          // // payload should contain state information
+          // this.properties.rotateDirection = 0;
+          // this.bus.push( 'entity.move', this );
+        // }.bind(this))
+        // .listen( 'player.turn.right.start', function( _name, payload ) {
+          // // payload should contain state information
+          // this.properties.rotateDirection = 1;
+          // this.bus.push( 'entity.move', this );
+        // }.bind(this))
+        // .listen( 'player.turn.right.end', function( _name, payload ){
+          // this.properties.rotateDirection = 0;
+          // this.bus.push( 'entity.move', this );
+        // }.bind(this));
+
+      // // left
+      // gameEnvironment.keyboard.handle( 37, function( _key, state ) {
+        // this.bus.push( 'player.turn.left.start' );
+      // }.bind(this), function( _key, state ) {
+        // this.bus.push( 'player.turn.left.end' );
+      // }.bind(this));
+
+      // // right
+      // gameEnvironment.keyboard.handle( 39, function( _key, state ) {
+        // this.bus.push( 'player.turn.right.start' );
+      // }.bind(this), function( _key, state ) {
+        // this.bus.push( 'player.turn.right.end' );
+      // }.bind(this));
+    },
+    frameHandler: function( tick, timeDelta, now ) {
+      this.properties.rotateRate += this.properties.rotateDirection * 0.01;
+
+      if ( this.properties.rotateDirection == 0 ) {
+        this.properties.rotateRate = 0;
+      } else if ( this.properties.rotateRate >= this.properties.maxRotateRate ) {
+        this.properties.rotateRate = this.properties.maxRotateRate;
+      } else if ( this.properties.rotateRate <= -this.properties.maxRotateRate ) {
+        this.properties.rotateRate = -this.properties.maxRotateRate;
+      }
+
+      this.angleRadians += this.properties.rotateRate;
+      this.bus.push( 'entity.move', this );
+    }
+  });
+
 
   gameEnvironment.run();
 })(window,document);
