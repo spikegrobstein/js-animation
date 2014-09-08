@@ -44,6 +44,10 @@
     return this.keyMappings[key.match(/^:(.+)$/)[1]];
   }
 
+  KeyboardDriver.prototype.action = function( name ) {
+    return this.actionState[name] && this.actionState[name][0];
+  }
+
   KeyboardDriver.prototype.handle = function( key, options ) {
     if ( typeof key === 'string' ) {
       if ( key.length > 1 && key[0] == ':' ) {
@@ -71,6 +75,7 @@
           key: key,
           keyboardState: this.keyboardState,
           actionState: this.actionState,
+          kb: this,
         } );
       }
     }.bind(this));
@@ -87,6 +92,7 @@
           key: key,
           keyboardState: this.keyboardState,
           actionState: this.actionState,
+          kb: this,
         } );
       }
     }.bind(this));

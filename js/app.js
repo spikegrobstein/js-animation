@@ -89,9 +89,9 @@
       })
 
       this.bus.listen( 'keyboard.state.change', function( _name, payload ) {
-        if ( payload.actionState.turn[0] == 'left' ) {
+        if ( payload.kb.action('turn') == 'left' ) {
           this.properties.rotateDirection = -1;
-        } else if ( payload.actionState.turn[0] == 'right' ) {
+        } else if ( payload.kb.action('turn') == 'right' ) {
           this.properties.rotateDirection = 1;
         } else {
           this.properties.rotateDirection = 0;
@@ -110,6 +110,12 @@
       }
 
       this.angleRadians += this.properties.rotateRate;
+      if ( this.angleRadians < -Math.PI - 0.25 ) {
+        this.angleRadians = -Math.PI - 0.25;
+      } else if ( this.angleRadians > 0.25 ) {
+        this.angleRadians = 0.25;
+      }
+
       this.bus.push( 'entity.move', this );
     }
   });
