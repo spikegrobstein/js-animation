@@ -21,6 +21,8 @@ window.requestAnimFrame = function(){
     this.movedEntityQueue = [];
     this.entities = []; // every entity that we're tracking
 
+    this.state = {}; // the current state of things ( used for logic )
+
     this.ticks = 0;
     this.lastTickAt = new Date().getTime();
     this.status = 'halted';
@@ -52,7 +54,64 @@ window.requestAnimFrame = function(){
     this.bus.listen( 'entity.element.add', function( _name, element ) {
       this.fieldElement.appendChild( element );
     }.bind(this));
+
+    this.bus.listen( 'state.set', function( _name, payload ) {
+      this.setState( payload.action, payload.mode );
+    }.bind(this));
+
+    this.bus.listen( 'state.unset', function( _name, payload ) {
+      this.unsetState( payload.action, payload.mode );
+    }.bind(this));
   };
+
+  GameEnvironment.prototype.configureKeyboard = function( config ) {
+    var key, binding;
+    for ( key in config ) {
+      binding = config[key];
+      this.keyboard.handle( key, binding );
+    }
+  };
+
+  GameEnvironment.prototype.getState = function( action ) {
+    return this.state[action] && this.state[action][0];
+  };
+
+  GameEnvironment.prototype.setState = function( action, mode ) {
+    if ( typeof this.state[action] === 'undefined' ) {
+      this.state[action] = [];
+    }
+
+    if ( this.state[action].indexOf( mode ) == -1 ) {
+      this.state[action].unshift( mode );
+    }
+
+    this.bus.push( 'state.change', {
+      action: action,
+      mode: mode,
+      current: this.getState( action ),
+    });
+
+    return this;
+  }
+
+  GameEnvironment.prototype.unsetState = function( action, mode ) {
+    if ( typeof this.state[action] === 'undefined' ) {
+      this.state[action] = [];
+    }
+
+    this.state[action].splice(
+      this.state[action].indexOf( mode ),
+      1
+    );
+
+    this.bus.push( 'state.change', {
+      action: action,
+      mode: mode,
+      current: this.getState( action ),
+    });
+
+    return this;
+  }
 
   GameEnvironment.prototype.moveToTrash = function( element ) {
     this.trashElement.appendChild( element );
@@ -78,9 +137,11 @@ window.requestAnimFrame = function(){
     this.bus.push( 'env.step', [
       this.ticks,                               // ticks
       new Date().getTime() - this.lastTickAt,   // timeDelta
-      new Date().getTime()                      // now
+      new Date().getTime(),                     // now
+      this.state,
     ] );
 
+    // updates the UI
     this.updateEntities();
 
     this.lastTickAt = new Date().getTime();
@@ -91,6 +152,8 @@ window.requestAnimFrame = function(){
     this.status = 'halted'
   }
 
+  // any entities that have been updated, move into place
+  // an entity needs to fire off an entity.moved message in order to get added to this queue
   GameEnvironment.prototype.updateEntities = function() {
     var entity;
 

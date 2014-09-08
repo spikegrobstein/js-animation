@@ -2,8 +2,11 @@
 
   window.gameEnvironment = new GameEnvironment( document.getElementById('game-field') );
 
-  gameEnvironment.keyboard.handle( 'A', function(key, state) { console.log('pressed: ' + key) });
-  gameEnvironment.keyboard.handle( 'B', function(key, state) { console.log('pressed: ' + key) });
+  gameEnvironment.configureKeyboard({
+    ':left': { action: 'turn', mode: 'left' },
+    ':right': { action: 'turn', mode: 'right' },
+    ' ': { action: 'fire', mode: 'fire' }
+  });
 
   new Entity({
     x: 0,
@@ -99,36 +102,23 @@
     },
     onInit: function( ) {
 
-      gameEnvironment.keyboard.handle(':left', {
-        action: 'turn',
-        mode: 'left'
-      });
-
-      gameEnvironment.keyboard.handle(':right', {
-        action: 'turn',
-        mode: 'right'
-      });
-
-      gameEnvironment.keyboard.handle(' ', {
-        action: 'fire',
-        mode: 'gun'
-      })
-
-      this.bus.listen( 'keyboard.state.change', function( _name, payload ) {
-        if ( payload.kb.action('turn') == 'left' ) {
+      this.bus.listen( 'state.change', function( _name, payload ) {
+        // console.log(['STATE.CHANGE in ENTITY', payload])
+        if ( payload.action == 'turn' && payload.current == 'left' ) {
           this.properties.rotateDirection = -1;
-        } else if ( payload.kb.action('turn') == 'right' ) {
+        } else if ( payload.action == 'turn' && payload.current == 'right' ) {
           this.properties.rotateDirection = 1;
         } else {
           this.properties.rotateDirection = 0;
         }
 
-        if ( payload.kb.action('fire') ) {
+        if ( payload.action == 'fire' ) {
           this.properties.fire();
         }
       }.bind(this));
     },
-    frameHandler: function( tick, timeDelta, now ) {
+    frameHandler: function( tick, timeDelta, now, state ) {
+      // console.log( state );
       this.properties.rotateRate += this.properties.rotateDirection * 0.01;
 
       if ( this.properties.rotateDirection == 0 ) {
