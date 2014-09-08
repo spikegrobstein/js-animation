@@ -74,7 +74,28 @@
     properties: {
       rotateRate: 0, // not rotating
       rotateDirection: 0,
-      maxRotateRate: 0.1
+      maxRotateRate: 0.1,
+      fire: function() {
+        console.log('BANG!!!');
+
+        new Entity({
+          x: 152,
+          y: 152,
+          bus: this.bus,
+          class: 'bullet',
+          properties: {
+            speed: 1
+          },
+          angleRadians: this.angleRadians,
+          frameHandler: function( tick, timeDelta, now ) {
+            this.move(
+              timeDelta / 1000 * this.speed,
+              timeDelta / 1000 * this.speed,
+              true
+            )
+          }
+        })
+      }.bind(this)
     },
     onInit: function( ) {
 
@@ -86,6 +107,11 @@
       gameEnvironment.keyboard.handle(':right', {
         action: 'turn',
         mode: 'right'
+      });
+
+      gameEnvironment.keyboard.handle(' ', {
+        action: 'fire',
+        mode: 'gun'
       })
 
       this.bus.listen( 'keyboard.state.change', function( _name, payload ) {
@@ -95,6 +121,10 @@
           this.properties.rotateDirection = 1;
         } else {
           this.properties.rotateDirection = 0;
+        }
+
+        if ( payload.kb.action('fire') ) {
+          this.properties.fire();
         }
       }.bind(this));
     },
