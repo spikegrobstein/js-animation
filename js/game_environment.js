@@ -19,7 +19,7 @@ window.requestAnimFrame = function(){
     this.keyboard = new KeyboardDriver( this.bus );
 
     this.movedEntityQueue = [];
-    this.entities = [];
+    this.entities = []; // every entity that we're tracking
 
     this.ticks = 0;
     this.lastTickAt = new Date().getTime();
@@ -74,7 +74,13 @@ window.requestAnimFrame = function(){
     if ( this.status == 'halted' ) { return; }
     this.ticks += 1;
 
-    this.bus.push( 'env.step', [ this.ticks, new Date().getTime() - this.lastTickAt, new Date().getTime() ] )
+    // tell everything to update
+    this.bus.push( 'env.step', [
+      this.ticks,                               // ticks
+      new Date().getTime() - this.lastTickAt,   // timeDelta
+      new Date().getTime()                      // now
+    ] );
+
     this.updateEntities();
 
     this.lastTickAt = new Date().getTime();
@@ -95,7 +101,10 @@ window.requestAnimFrame = function(){
   };
 
   GameEnvironment.prototype.moveEntity = function( entity ) {
-    entity.element.style['transform'] = entity.element.style['-ms-transform'] = entity.element.style['-webkit-transform'] = 'translate3d(' + entity.x + 'px,' + entity.y + 'px,0) rotate(' + entity.angleRadians + 'rad)';
+    entity.element.style['transform'] =
+      entity.element.style['-ms-transform'] =
+      entity.element.style['-webkit-transform'] =
+      'translate3d(' + entity.x + 'px,' + entity.y + 'px,0) rotate(' + entity.angleRadians + 'rad)';
 
     entity.element.hidden = ! entity.display;
   };
@@ -103,3 +112,4 @@ window.requestAnimFrame = function(){
   globals.GameEnvironment = GameEnvironment;
 
 })(window);
+
