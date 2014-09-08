@@ -17,17 +17,30 @@
       rotation: 0
     },
     frameHandler: function( tick, timeDelta, now ) {
-      // f(1000) = ( 300 * PI )
-      // 942.4777961 per second (1000)
-      // 942.4777961 / (1000 / timeDelta)
-      // 942.47779
-      // (150 * 2 * pi) / ( 1000 / timeDelta ) / ( 2 * pi )
-
       this.properties.rotation += ( timeDelta / 4000 ) * ( 2 * Math.PI );
 
       this.moveTo(
-        200 + 150 * ( Math.cos( this.properties.rotation ) ),
-        200 + 150 * ( Math.sin( this.properties.rotation ) ),
+        225 + 150 * ( Math.cos( this.properties.rotation ) ),
+        225 + 150 * ( Math.sin( this.properties.rotation ) ),
+        true
+      )
+    }
+  });
+
+  new Entity({
+    x: 0,
+    y: 50,
+    bus: gameEnvironment.bus,
+    class: 'rocket',
+    properties: {
+      rotation: Math.PI
+    },
+    frameHandler: function( tick, timeDelta, now ) {
+      this.properties.rotation += ( timeDelta / 4000 ) * ( 2 * Math.PI );
+
+      this.moveTo(
+        225 + 150 * ( Math.cos( this.properties.rotation ) ),
+        225 + 150 * ( Math.sin( this.properties.rotation ) ),
         true
       )
     }
@@ -47,16 +60,17 @@
     frameHandler: function( tick, timeDelta, now ) {
       this.properties.yv += 10;
 
-      if ( this.y > 460 ) {
+      if ( this.y > 480 ) {
+        this.y = 480;
         this.properties.yv = -this.properties.yv * .9;
         this.properties.bounces += 1;
 
-        if ( this.properties.bounces > 5 ) {
+        if ( this.properties.bounces > 15 ) {
           this.destroy();
         }
       }
 
-      if ( this.x > 500 || this.x < 0 ) {
+      if ( this.x > 450 || this.x < 50 ) {
         this.properties.xv = -this.properties.xv * .9;
       }
 
